@@ -1,0 +1,6 @@
+- name: Installing Zabbix on Debian
+  hosts: all
+  become: true 
+
+  roles:
+    - role-deploy-zabbix

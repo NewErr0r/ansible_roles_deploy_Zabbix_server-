@@ -1,0 +1,67 @@
+---
+- name: Update all packages
+  apt:
+    name: "*"
+    state: latest
+    update_cache: yes 
+    force_apt_get: yes
+
+- name: Configure timezone
+  shell:  |
+    timedatectl set-timezone {{ timezone }}
+
+- name: Download dpkg packages zabbix-release
+  get_url:
+    url: "{{ download_dpkg }}"
+    dest: "{{ path_download }}"
+
+- name: Install a .deb package
+  ansible.builtin.apt:
+    deb: "{{ path_download }}/zabbix-release_5.4-1+debian11_all.deb"
+
+- name: Update all packages
+  apt:
+    name: "*"
+    state: latest
+    update_cache: yes 
+    force_apt_get: yes
+
+- name: Install packages for Zabbix
+  apt: 
+    name: "{{ zabbix_packages }}"
+    state: latest 
+    update_cache: yes 
+
+- name: Configure MariaDB
+  include_tasks: deploy_mariadb.yaml
+
+- name: Copy zabbix_server.conf 
+  copy:
+    src: /etc/zabbix/zabbix_server.conf
+    dest: /etc/zabbix/zabbix_server.conf.origin
+    remote_src: yes 
+
+- name: Configure zabbix_server.conf 
+  template: 
+    src: zabbix_server.conf.j2
+    dest: "{{ zabbix_server_conf }}"
+
+- name: Remove NGINX default file
+  file: 
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Configure NGINX for Zabbix
+  template:
+    src: nginx.conf.j2
+    dest: "{{ nginx_conf }}"
+  notify:
+    - Restarted and Enabled zabbix-server
+    - Restarted and Enabled zabbix-agent
+    - Restarted and Enabled nginx 
+    - Restarted and Enabled php7.4-fpm
+
+- debug:
+    msg:
+      - "Open the browser 'http://{{ ansible_ssh_host }}'"
+      - "password database: {{ zabbix_user_pass }}"

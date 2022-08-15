@@ -1,0 +1,13 @@
+---
+timezone: "Europe/Moscow"
+
+### dpkg ###
+download_dpkg: "https://repo.zabbix.com/zabbix/5.4/debian/pool/main/z/zabbix-release/zabbix-release_5.4-1+debian11_all.deb"
+path_download: /root
+
+### MariaDB ###
+root_pass: "P@ssw0rd"
+zabbix_db: "zabbix"
+zabbix_user: "zabbix"
+zabbix_user_pass: "P@ssw0rd"
+destin_folder_import_db_zabbix: /usr/share/doc/zabbix-sql-scripts/mysql/create.sql.gz

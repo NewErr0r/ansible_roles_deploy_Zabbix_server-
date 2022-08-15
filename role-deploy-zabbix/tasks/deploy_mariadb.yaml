@@ -1,0 +1,38 @@
+- name: Started and Enabled MariaDB 
+  service: 
+    name: mariadb 
+    enabled: true 
+    state: started 
+
+- name: Configure root password for MariaDB 
+  command: mysqladmin -u root password {{ root_pass }}
+
+- name: Create DB for Zabbix
+  community.mysql.mysql_db:
+    name: "{{ zabbix_db }}"
+    encoding: utf8
+    collation: utf8_bin
+    login_user: root 
+    login_password: "{{ root_pass }}"
+  failed_when: false 
+
+- name: Create User for Zabbix
+  community.mysql.mysql_user:
+    name: "{{ zabbix_user }}"
+    password: "{{ zabbix_user_pass }}"
+    priv: '*.*:ALL,GRANT'
+    host: '%'
+    state: present
+    login_user: root
+    login_password: "{{ root_pass }}"
+
+- name: Import DB for Zabbix
+  community.mysql.mysql_db:
+    name: "{{ zabbix_db }}"
+    encoding: utf8
+    collation: utf8_bin
+    target: "{{ destin_folder_import_db_zabbix }}"
+    state: import
+    login_user: "{{ zabbix_user }}" 
+    login_password: "{{ zabbix_user_pass }}"
+  failed_when: false 
